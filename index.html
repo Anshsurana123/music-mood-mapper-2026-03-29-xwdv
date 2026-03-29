@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SoundScapes</title>
+  <style>
+    :root {
+      --primary: #6b4f35;
+      --secondary: #a17c5e;
+      --accent: #d4b08c;
+      --light: #f5e8d3;
+      --dark: #3d2b1f;
+      --shadow: rgba(61, 43, 31, 0.3);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Georgia', serif;
+      background-color: var(--light);
+      color: var(--dark);
+      line-height: 1.6;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f5e8d3"/><path d="M0 10 L100 10 M0 30 L100 30 M0 50 L100 50 M0 70 L100 70 M0 90 L100 90" stroke="%23d4b08c" stroke-width="0.5"/></svg>');
+      background-size: 100px 100px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      text-align: center;
+      padding: 2rem 1rem;
+      background-color: var(--primary);
+      color: var(--light);
+      border-bottom: 8px solid var(--dark);
+      position: relative;
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      letter-spacing: 2px;
+      text-shadow: 2px 2px 4px var(--shadow);
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      font-style: italic;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 1rem;
+      flex: 1;
+    }
+
+    .card {
+      background-color: rgba(255, 255, 255, 0.85);
+      border-radius: 12px;
+      padding: 1.8rem;
+      margin-bottom: 1.8rem;
+      box-shadow: 0 6px 15px rgba(61, 43, 31, 0.2);
+      border: 1px solid var(--accent);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 20px rgba(61, 43, 31, 0.25);
+    }
+
+    h2 {
+      color: var(--primary);
+      margin-bottom: 1rem;
+      border-bottom: 2px solid var(--secondary);
+      padding-bottom: 0.5rem;
+      font-size: 1.6rem;
+    }
+
+    .genre-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .genre-btn, .style-btn {
+      background-color: var(--light);
+      border: 2px solid var(--secondary);
+      padding: 0.8rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .genre-btn:hover, .style-btn:hover {
+      background-color: var(--accent);
+    }
+
+    .genre-btn.selected, .style-btn.selected {
+      background-color: var(--primary);
+      color: var(--light);
+      border-color: var(--dark);
+    }
+
+    .style-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .slider-container {
+      margin: 1.5rem 0;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    .slider-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      height: 8px;
+      border-radius: 4px;
+      background: var(--accent);
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+      border: 2px solid var(--light);
+      box-shadow: 0 2px 6px var(--shadow);
+    }
+
+    .value-display {
+      min-width: 50px;
+      text-align: center;
+      background: var(--secondary);
+      color: var(--light);
+      padding: 0.4rem 0.6rem;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+
+    button.generate {
+      background-color: var(--primary);
+      color: var(--light);
+      border: none;
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      display: block;
+      margin: 2rem auto;
+      font-weight: bold;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(61, 43, 31, 0.3);
+    }
+
+    button.generate:hover {
+      background-color: var(--dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(61, 43, 31, 0.4);
+    }
+
+    .playlist {
+      display: none;
+      animation: fadeIn 0.8s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .track-list {
+      list-style: none;
+      margin: 1rem 0;
+    }
+
+    .track-item {
+      padding: 0.8rem;
+      background-color: var(--light);
+      margin-bottom: 0.5rem;
+      border-radius: 6px;
+      border-left: 4px solid var(--primary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.95rem;
+    }
+
+    .track-item:nth-child(even) {
+      background-color: white;
+    }
+
+    .export-btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 1.5rem;
+    }
+
+    .export-btn {
+      padding: 0.8rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .spotify { background-color: #1DB954; color: white; }
+    .apple { background-color: #FA243C; color: white; }
+    .youtube { background-color: #FF0000; color: white; }
+
+    .export-btn:hover {
+      transform: scale(1.05);
+    }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      background-color: var(--primary);
+      color: var(--light);
+      margin-top: auto;
+      font-size: 0.9rem;
+      border-top: 8px solid var(--dark);
+    }
+
+    @media (max-width: 600px) {
+      header h1 { font-size: 2rem; }
+      .container { padding: 0.8rem; }
+      .card { padding: 1.2rem; }
+      .slider-wrapper { flex-direction: column; }
+      .export-btns { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SoundScapes</h1>
+    <p>Generate evocative music playlists inspired by literary worlds and writing styles.</p>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <h2>Select Literary Genre</h2>
+      <div class="genre-grid">
+        <button class="genre-btn">Science Fiction</button>
+        <button class="genre-btn">Fantasy</button>
+        <button class="genre-btn">Mystery</button>
+        <button class="genre-btn">Romance</button>
+        <button class="genre-btn">Horror</button>
+        <button class="genre-btn">Historical Fiction</button>
+        <button class="genre-btn">Dystopian</button>
+        <button class="genre-btn">Magical Realism</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Writing Style & Atmosphere</h2>
+      <div class="style-grid">
+        <button class="style-btn">Melancholic</button>
+        <button class="style-btn">Epic</button>
+        <button class="style-btn">Intimate</button>
+        <button class="style-btn">Suspenseful</button>
+        <button class="style-btn">Dreamy</button>
+        <button class="style-btn">Gritty</button>
+        <button class="style-btn">Lyrical</button>
+        <button class="style-btn">Minimalist</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Playlist Settings</h2>
+      <div class="slider-container">
+        <label for="duration">Duration (minutes): <span id="duration-value">60</span></label>
+        <div class="slider-wrapper">
+          <input type="range" id="duration" min="15" max="180" value="60" step="15"/>
+          <span id="duration-display" class="value-display">60 min</span>
+        </div>
+      </div>
+
+      <div class="slider-container">
+        <label for="intensity">Intensity Level: <span id="intensity-value">Medium</span></label>
+        <div class="slider-wrapper">
+          <input type="range" id="intensity" min="1" max="5" value="3"/>
+          <span id="intensity-display" class="value-display">3</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="generate">Generate Playlist</button>
+
+    <div id="playlist-result" class="card playlist">
+      <h2>Your SoundScape: <span id="playlist-title">Epic Sci-Fi Journey</span></h2>
+      <p id="playlist-description">Immerse yourself in vast cosmic soundscapes and pulsing synth rhythms, perfect for exploring distant galaxies and futuristic civilizations.</p>
+      <ul id="track-list" class="track-list"></ul>
+      <div class="export-btns">
+        <button class="export-btn spotify">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm3.669 6.294a.75.75 0 0 1 .981.98l-4.5 4.5a.75.75 0 0 1-1.06-.057l-2.5-2.5a.75.75 0 1 1 1.06-1.06l1.97 1.97 3.91-3.95a.75.75 0 0 1 .98.98z"/>
+          </svg>
+          Export to Spotify
+        </button>
+        <button class="export-btn apple">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M11.182.008C11.148-.03 9.923.023 8.857 1.18c-1.06 1.156-2.774 2.578-2.774 5.364 0 2.597 1.83 4.129 3.113 4.129 1.285 0 2.018-.93 2.018-2.327 0-1.137-.495-2.1-1.37-2.692.365-.066.777-.214 1.058-.415-.178.42-.61 1.177-.942 1.55-.303.343-.607.686-.941 1.008-.043-.11-.065-.23-.065-.358 0-.693.25-1.359.6-1.854.35-.507.85-.9 1.35-1.137-.015-.04-.03-.08-.045-.12-.165-.36-.52-.62-.937-.62-.512 0-.93.343-1.14.71-.21.368-.28.76-/.28 1.137 0 .533.18.983.44 1.33.26.35.62.607 1.04.74a5.66 5.66 0 0 1-.05-1.07c0-.693.25-1.359.6-1.854.35-.507.85-.9 1.35-1.137-.015-.04-.03-.08-.045-.12-.165-.36-.52-.62-.937-.62-.512 0-.93.343-1.14.71-.21.368-.28.76-/.28 1.137z"/>
+            <path d="M12.643 14.857h-3.485c-.846 0-1.557-.158-2.14-.473-.584-.316-.977-.732-1.18-1.247-.05-.12-.08-.24-.08-.36 0-.19.06-.4.17-.61.11-.21.28-.4.51-.58.23-.18.51-.33.84-.44.33-.11.71-.16 1.14-.16s.88.04 1.18.11c.3.06.57.18.8.34.23.16.42.37.58.63.16.26.28.57.37.92.08.35.12.74.12 1.16v.21c-.1.07-.22.15-.36.24-.14.09-.3.19-.49.3-.19.11-.41.23-.67.37-.26.13-.57.29-.93.48-.35.18-.77.38-1.25.61-.48.23-.97.47-1.5.72-.53.26-1.1.52-1.7.79-.6.28-1.26.57-1.97.88-.7.31-1.49.64-2.34.98l-.95.37-.5.19-.49.18-.49.18-.31.11-.15.06v-.3c0-.32.05-.69.16-1.09.11-.4.28-.82.5-.126.996-.243 1.24-.584 1.24-.83 0-.06-.01-.14-.04-.25-.03-.11-.06-.2-.09-.27-.04-.08-.07-.14-.09-.18-.03-.05-.05-.08-.07-.1 0-.03-.01-.05-.01-.07l-.61.24c.7-2.8 2.53-5.14 5.5-7.02 2.97-1.89 5.5-2.48 7.6-1.78.93.31 1.62.78 2.08 1.42.46.64.68 1.32.68 2.05 0 .58-.13 1.15-.4 1.72-.27.57-.63 1.07-1.09 1.51-.46.44-.99.79-1.6.104-.61.25-1.28.38-2.02.38-.6 0-1.13-.1-1.59-.3-.46-.2-.86-.48-1.2-.83-.34-.35-.61-.75-.82-1.2-.21-.46-.32-.95-.32-1.48 0-.5.09-.98.26-1.42.18-.44.42-.83.73-1.17.3-.34.67-.62 1.1-.84.43-.22.91-.33 1.45-.33.63 0 1.21.13 1.74.39.53.26 1.01.62 1.45 1.07.44.45.81.98 1.13 1.58.32.6.57 1.27.75 2.02.18.75.27 1.52.27 2.31 0 .99-.13 1.93-.4 2.8-.26.87-.62 1.67-1.08 2.39-.46.72-1.03 1.35-1.7 1.9-.67.55-1.45 1.01-2.34 1.37-.89.36-1.9.64-3.04.85-1.14.2-2.43.3-3.88.3z"/>
+          </svg>
+          Export to Apple Music
+        </button>
+        <button class="export-btn youtube">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8.051 1.999h.089c.822.003 4.987.033 6.11.335a2.01 2.01 0 0 1 1.415 1.42c.101.38.172.883.22 1.402l.01.104.022.26.008.104c.065.914.073 1.77.074 1.957v.075c-.001.194-.01 1.108-.082 2.06l-.008.105-.009.104c-.05.572-.124 1.14-.235 1.558a2.007 2.007 0 0 1-1.415 1.42c-1.19.302-5.25.333-6.11.335h-.092c-.822-.003-4.987-.033-6.11-.335a2.01 2.01 0 0 1-1.415-1.42c-.101-.38-.172-.883-.22-1.402l-.01-.104-.022-.26-.008-.104c-.065-.914-.073-1.77-.074-1.957v-.075c.001-.194.01-1.108.082-2.06l.008-.105.009-.104c.05-.572.124-1.14.235-1.558a2.007 2.007 0 0 1 1.415-1.42c1.19-.302 5.25-.333 6.11-.335zM10 4.8c-.85.002-1.702.124-2.49.414-.805.297-1.528.781-1.992 1.415-.464.634-.695 1.406-.695 2.258s.23 1.625.695 2.258c.464.634 1.187 1.118 1.992 1.415.788.29 1.64.412 2.49.414.85.002 1.702-.124 2.49-.414.805-.297 1.528-.781 1.992-1.415.464-.634.695-1.406.695-2.258s-.23-1.625-.695-2.258c-.464-.634-1.187-1.118-1.992-1.415-.788-.29-1.64-.412-2.49-.414z"/>
+            <path d="M6.664 10.94c.805 0 1.457-.65 1.457-1.453s-.652-1.453-1.457-1.453-1.458.65-1.458 1.453.653 1.453 1.458 1.453z"/>
+          </svg>
+          Export to YouTube Music
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2023 SoundScapes. Crafted with warmth and analog soul.</p>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const genreButtons = document.querySelectorAll('.genre-btn');
+      const styleButtons = document.querySelectorAll('.style-btn');
+      const durationSlider = document.getElementById('duration');
+      const intensitySlider = document.getElementById('intensity');
+      const durationValue = document.getElementById('duration-value');
+      const intensityValue = document.getElementById('intensity-value');
+      const durationDisplay = document.getElementById('duration-display');
+      const intensityDisplay = document.getElementById('intensity-display');
+      const generateBtn = document.querySelector('.generate');
+      const playlistResult = document.getElementById('playlist-result');
+      const trackList = document.getElementById('track-list');
+      const playlistTitle = document.getElementById('playlist-title');
+      const playlistDescription = document.getElementById('playlist-description');
+
+      let selectedGenre = '';
+      let selectedStyle = '';
+
+      // Event Listeners
+      genreButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          genreButtons.forEach(b => b.classList.remove('selected'));
+          this.classList.add('selected');
+          selectedGenre = this.textContent;
+        });
+      });
+
+      styleButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          styleButtons.forEach(b => b.classList.remove('selected'));
+          this.classList.add('selected');
+          selectedStyle = this.textContent;
+        });
+      });
+
+      durationSlider.addEventListener('input', function() {
+        const minutes = parseInt(this.value);
+        durationValue.textContent = minutes;
+        durationDisplay.textContent = `${minutes} min`;
+      });
+
+      intensitySlider.addEventListener('input', function() {
+        const level = parseInt(this.value);
+        intensityValue.textContent = getIntensityLabel(level);
+        intensityDisplay.textContent = level;
+      });
+
+      generateBtn.addEventListener('click', function() {
+        if (!selectedGenre || !selectedStyle) {
+          alert('Please select both a literary genre and a writing style.');
+          return;
+        }
+
+        const duration = parseInt(durationSlider.value);
+        const intensity = parseInt(intensitySlider.value);
+
+        // Generate playlist
+        const playlist = generatePlaylist(selectedGenre, selectedStyle, duration, intensity);
+        
+        // Render playlist
+        renderPlaylist(playlist);
+        
+        // Show playlist
+        playlistResult.style.display = 'block';
+        window.scrollTo({ top: playlistResult.offsetTop - 100, behavior: 'smooth' });
+      });
+
+      // Export buttons
+      document.querySelector('.spotify').addEventListener('click', function() {
+        alert('Spotify export would open Spotify authorization flow.');
+      });
+      document.querySelector('.apple').addEventListener('click', function() {
+        alert('Apple Music export would redirect to Apple Music.');
+      });
+      document.querySelector('.youtube').addEventListener('click', function() {
+        alert('YouTube Music export would redirect to YouTube Music.');
+      });
+
+      // Helper functions
+      function getIntensityLabel(value) {
+        const labels = ['', 'Very Low', 'Low', 'Medium', 'High', 'Very High'];
+        return labels[value] || 'Medium';
+      }
+
+      function generatePlaylist(genre, style, duration, intensity) {
+        const mappings = {
+          'Science Fiction': {
+            baseTracks: [
+              { title: 'Stellar Drift', artist: 'Cosmic Echoes' },
+              { title: 'Neon Nebula', artist: 'Synthwave Collective' },
+              { title: 'Orbital Resonance', artist: 'Quantum Fields' },
+              { title: 'Zero Gravity', artist: 'Ambient Pioneers' },
+              { title: 'Interstellar Transit', artist: 'Deep Space Radio' }
+            ],
+            description: 'Immerse yourself in vast cosmic soundscapes and pulsing synth rhythms, perfect for exploring distant galaxies and futuristic civilizations.'
+          },
+          'Fantasy': {
+            baseTracks: [
+              { title: 'Enchanted Forest', artist: 'Mythic Sounds' },
+              { title: 'Dragon's Lair', artist: 'Epic Orchestral' },
+              { title: 'Wizard’s Tower', artist: 'Celtic Reverie' },
+              { title: 'Ancient Runes', artist: 'Mystic Chant' },
+              { title: 'Quest Begins', artist: 'Heroic Themes' }
+            ],
+            description: 'Lose yourself in sweeping orchestral pieces and mystical melodies, evoking ancient kingdoms and magical realms.'
+          },
+          'Mystery': {
+            baseTracks: [
+              { title: 'Midnight Clues', artist: 'Noir Jazz' },
+              { title: 'Hidden Agenda', artist: 'Suspense Ensemble' },
+              { title: 'The Suspect', artist: 'Tense Strings' },
+              { title: 'Breaking the Case', artist: 'Dramatic Percussion' },
+              { title: 'Twist Ending', artist: 'Cinematic Sounds' }
+            ],
+            description: 'Tense, atmospheric tracks with haunting melodies that keep you on edge, perfect for unraveling intricate plots.'
+          },
+          'Romance': {
+            baseTracks: [
+              { title: 'First Glance', artist: 'Soft Piano' },
+              { title: 'Love Letter', artist: 'Acoustic Heart' },
+              { title: 'Moonlit Walk', artist: 'Jazz Quartet' },
+              { title: 'Confession', artist: 'String Ensemble' },
+              { title: 'Forever Yours', artist: 'Melodic Ballad' }
+            ],
+            description: 'Tender, heartfelt melodies that capture the nuances of love, from first blush to enduring devotion.'
+          },
+          'Horror': {
+            baseTracks: [
+              { title: 'Creaking Floorboards', artist: 'Dark Ambience' },
+              { title: 'Whispers in the Dark', artist: 'Unsettling Sounds' },
+              { title: 'The Haunting', artist: 'Dread Orchestra' },
+              { title: 'Escape', artist: 'Panic Beats' },
+              { title: 'Final Breath', artist: 'Sinister Choir' }
+            ],
+            description: 'Unsettling, dissonant soundscapes designed to raise the hairs on your neck and quicken your pulse.'
+          },
+          'Historical Fiction': {
+            baseTracks: [
+              { title: 'Victorian Parlor', artist: 'Classical Revival' },
+              { title: 'Front Lines', artist: 'War Orchestra' },
+              { title: 'Ancient Marketplace', artist: 'Ethnic Ensemble' },
+              { title: 'Royal Ball', artist: 'Baroque Strings' },
+              { title: 'Frontier Journey', artist: 'Western Ballad' }
+            ],
+            description: 'Authentic period-inspired music that transports you to another time and place with historical accuracy.'
+          },
+          'Dystopian': {
+            baseTracks: [
+              { title: 'Broken City', artist: 'Industrial Noise' },
+              { title: 'Rebellion', artist: 'Angry Beats' },
+              { title: 'Surveillance', artist: 'Electronic Pulse' },
+              { title: 'Escape Route', artist: 'Desperate Rhythm' },
+              { title: 'Last Hope', artist: 'Minimalist Piano' }
+            ],
+            description: 'Gritty, industrial soundscapes with oppressive rhythms that mirror the struggle for freedom in oppressive worlds.'
+          },
+          'Magical Realism': {
+            baseTracks: [
+              { title: 'Floating Beds', artist: 'Dream Pop' },
+              { title: 'Butterfly Letters', artist: 'Soft Jazz' },
+              { title: 'Rain of Flowers', artist: 'Latin Fusion' },
+              { title: 'Eternal Memory', artist: 'Ethereal Voices' },
+              { title: 'Time Loop', artist: 'Repetitive Melody' }
+            ],
+            description: 'Dreamlike, surreal compositions that blend the ordinary with the extraordinary in hauntingly beautiful ways.'
+          }
+        };
+
+        const baseData = mappings[genre] || mappings['Fantasy'];
+        const description = baseData.description;
+        const baseTracks = baseData.baseTracks;
+
+        // Adjust track count based on duration (approx 3-5 min per track)
+        const avgTrackLength = 4;
+        const trackCount = Math.max(3, Math.round(duration / avgTrackLength));
+
+        // Clone and potentially repeat tracks if needed
+        let tracks = [];
+        for (let i = 0; i < trackCount; i++) {
+          tracks.push({...baseTracks[i % baseTracks.length]});
+        }
+
+        // Modify titles slightly for variety
+        tracks = tracks.map((track, index) => ({
+          ...track,
+          title: `${track.title} ${intensity >= 4 ? '(Intense Mix)' : intensity <= 2 ? '(Gentle Mix)' : ''}`
+        }));
+
+        return {
+          title: `${style} ${genre} Soundscape`,
+          description: description,
+          tracks: tracks
+        };
+      }
+
+      function renderPlaylist(playlist) {
+        playlistTitle.textContent = playlist.title;
+        playlistDescription.textContent = playlist.description;
+        
+        trackList.innerHTML = '';
+        playlist.tracks.forEach((track, index) => {
+          const li = document.createElement('li');
+          li.className = 'track-item';
+          li.innerHTML = `
+            <span class="track-index">${index + 1}.</span>
+            <span class="track-title">${track.title}</span>
+            <span class="track-artist">by ${track.artist}</span>
+          `;
+          trackList.appendChild(li);
+        });
+      }
+
+      // Initialize with defaults
+      if (genreButtons[0]) genreButtons[0].click();
+      if (styleButtons[0]) styleButtons[0].click();
+    });
+  </script>
+</body>
+</html>
